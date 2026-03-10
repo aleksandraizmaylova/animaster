@@ -96,22 +96,23 @@ function animaster() {
                 }
                 await new Promise(r => setTimeout(r, step.duration));
             }
+            this.fadeOut(element, duration * 0.6);
+        },
+        showAndHide(element, duration) {
+            this.fadeIn(element, duration / 3);
+            setTimeout(() => this.fadeOut(element, duration / 3), duration / 3);
+        },
+        heartBeating(element) {
+            return setInterval(() => {
+                this.scale(element, 500, 1.4);
+                setTimeout(() => this.scale(element, 500, 1), 500);
+            }, 1000)
         }
+
     }
 }
 
-// const aniMaster = animaster();
-// const customAnimation = animaster()
-//     .addMove(200, {x: 40, y: 40})
-//     .addScale(800, 1.3)
-//     .addMove(200, {x: 80, y: 0})
-//     .addScale(800, 1)
-//     .addMove(200, {x: 40, y: -40})
-//     .addScale(800, 0.7)
-//     .addMove(200, {x: 0, y: 0})
-//     .addScale(800, 1);
-// const block = document.getElementById('moveBlock');
-// customAnimation.play(block);
+let heartBeatingId;
 addListeners();
 
 function addListeners() {
@@ -159,6 +160,24 @@ function addListeners() {
         .addEventListener('click', function () {
             const block = document.getElementById('moveAndHideBlock');
             animaster().resetMoveAndHide(block);
+        });
+
+    document.getElementById('showAndHidePlay')
+        .addEventListener('click', function () {
+            const block = document.getElementById('showAndHideBlock');
+            animaster().showAndHide(block, 5000);
+        });
+
+    document.getElementById('heartBeatingPlay')
+        .addEventListener('click', function () {
+            const block = document.getElementById('heartBeatingBlock');
+            heartBeatingId = animaster().heartBeating(block);
+        });
+
+    document.getElementById('heartBeatingStop')
+        .addEventListener('click', function () {
+            if (heartBeatingId !== null)
+                clearInterval(heartBeatingId);
         });
 }
 
