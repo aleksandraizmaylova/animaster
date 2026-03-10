@@ -43,8 +43,7 @@ function animaster() {
             this.addScale(duration, ratio).play(element);
         },
         moveAndHide(element, duration) {
-            this
-                .addMove(duration * 0.4, {x: 100, y: 20})
+            this.addMove(duration * 0.4, {x: 100, y: 20})
                 .addFadeOut(duration * 0.6)
                 .play(element);
         },
@@ -53,7 +52,18 @@ function animaster() {
             _resetMoveAndScale(element);
             _resetFadeOut(element);
         },
-
+        showAndHide(element, duration) {
+            this.addFadeIn(duration / 3)
+                .addDelay(duration / 3)
+                .addFadeOut(duration / 3)
+                .play(element);
+        },
+        heartBeating(element) {
+            return this.addScale(500, 1.4)
+                .addDelay(500)
+                .addScale(500, 1)
+                .play(element, true);
+        },
         addMove(duration, translation) {
             _steps.push({operation: 'move', duration: duration, parameter: translation});
             return this;
@@ -70,37 +80,99 @@ function animaster() {
             _steps.push({operation: 'fadeOut', duration: duration});
             return this;
         },
+        addDelay(duration) {
+            _steps.push({
+                operation: 'delay',
+                duration: duration,
+            })
+            return this;
+        },
 
-        play(element) {
-            let totalDelay = 0;
-            for (const step of _steps) {
-                const timer = setTimeout(() => {
-                    switch (step.operation) {
-                        case 'move':
-                            element.style.transitionDuration = `${step.duration}ms`;
-                            element.style.transform = getTransform(step.parameter, null);
-                            break;
-                        case 'scale':
-                            element.style.transitionDuration = `${step.duration}ms`;
-                            element.style.transform = getTransform(null, step.parameter);
-                            break;
-                        case 'fadeIn':
-                            element.style.transitionDuration = `${step.duration}ms`;
-                            element.classList.remove('hide');
-                            element.classList.add('show');
-                            break;
-                        case 'fadeOut':
-                            element.style.transitionDuration = `${step.duration}ms`;
-                            element.classList.add('hide');
-                            element.classList.remove('show');
-                            break;
-                        default:
-                            break;
+        play(element, cycled = false) {
+            let stop;
+            const cond = [...element.classList];
+            if (cycled) {
+                stop = setInterval(() => {
+                    let totalDelay = 0;
+                    for (const step of _steps) {
+                        const timer = setTimeout(() => {
+                            switch (step.operation) {
+                                case 'move':
+                                    element.style.transitionDuration = `${step.duration}ms`;
+                                    element.style.transform = getTransform(step.parameter, null);
+                                    break;
+                                case 'scale':
+                                    element.style.transitionDuration = `${step.duration}ms`;
+                                    element.style.transform = getTransform(null, step.parameter);
+                                    break;
+                                case 'fadeIn':
+                                    element.style.transitionDuration = `${step.duration}ms`;
+                                    element.classList.remove('hide');
+                                    element.classList.add('show');
+                                    break;
+                                case 'fadeOut':
+                                    element.style.transitionDuration = `${step.duration}ms`;
+                                    element.classList.add('hide');
+                                    element.classList.remove('show');
+                                    break;
+                                case 'delay':
+                                    setTimeout(() => {
+                                    }, step.duration);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }, totalDelay);
+
+                        _timers.push(timer);
+                        totalDelay += step.duration;
                     }
-                }, totalDelay);
+                }, _steps.map(x => x.duration).reduce((a, b) => a + b, 0))
 
-                _timers.push(timer);
-                totalDelay += step.duration;
+            } else {
+                let totalDelay = 0;
+                for (const step of _steps) {
+                    const timer = setTimeout(() => {
+                        switch (step.operation) {
+                            case 'move':
+                                element.style.transitionDuration = `${step.duration}ms`;
+                                element.style.transform = getTransform(step.parameter, null);
+                                break;
+                            case 'scale':
+                                element.style.transitionDuration = `${step.duration}ms`;
+                                element.style.transform = getTransform(null, step.parameter);
+                                break;
+                            case 'fadeIn':
+                                element.style.transitionDuration = `${step.duration}ms`;
+                                element.classList.remove('hide');
+                                element.classList.add('show');
+                                break;
+                            case 'fadeOut':
+                                element.style.transitionDuration = `${step.duration}ms`;
+                                element.classList.add('hide');
+                                element.classList.remove('show');
+                                break;
+                            case 'delay':
+                                setTimeout(() => {
+                                }, step.duration);
+                                break;
+                            default:
+                                break;
+                        }
+                    }, totalDelay);
+
+                    _timers.push(timer);
+                    totalDelay += step.duration;
+                }
+            }
+            return {
+                stop() {
+                    if (stop !== null)
+                        clearInterval(stop);
+                },
+                reset() {
+                    element.classList = [...cond]
+                }
             }
         },
         showAndHide(element, duration) {
@@ -201,7 +273,7 @@ function addListeners() {
     document.getElementById('heartBeatingStop')
         .addEventListener('click', function () {
             if (heartBeatingId !== null)
-                clearInterval(heartBeatingId);
+                heartBeatingId.stop();
         });
 }
 
