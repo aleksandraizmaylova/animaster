@@ -1,4 +1,21 @@
 function animaster() {
+    const resetFadeIn = (element) => {
+        element.style.transitionDuration = null;
+        element.classList.add('hide');
+        element.classList.remove('show');
+    }
+
+    const resetFadeOut = (element) => {
+        element.style.transitionDuration = null;
+        element.classList.remove('hide');
+        element.classList.add('show');
+    }
+
+    const resetMoveAndScale = (element) => {
+        element.style.transitionDuration = null;
+        element.style.transform = null;
+    }
+
     return {
         fadeIn(element, duration) {
             element.style.transitionDuration = `${duration}ms`;
